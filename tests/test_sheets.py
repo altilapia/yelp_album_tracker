@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, call
 
-from app.sheets import COLUMNS, _to_row, _upsert
+from app.sheets import COLUMNS, _extract_url, _to_row, _upsert
 
 MOTT_URL = "https://www.yelp.com/biz/mott-32-las-vegas-2"
 MANGO_URL = "https://www.yelp.com/biz/mango-mango-dessert-las-vegas"
@@ -43,7 +43,21 @@ def test_to_row_name_is_plain_text():
 
 def test_to_row_biz_url_is_hyperlink():
     row = _to_row(MOTT)
-    assert row[1] == f'=HYPERLINK("{MOTT_URL}","{MOTT_URL}")'
+    assert row[1] == f'=HYPERLINK("{MOTT_URL}","Yelp ↗")'
+
+
+# ── _extract_url ──────────────────────────────────────────────────────────────
+
+def test_extract_url_from_hyperlink_formula():
+    assert _extract_url(f'=HYPERLINK("{MOTT_URL}","Yelp ↗")') == MOTT_URL
+
+
+def test_extract_url_passthrough_for_plain_url():
+    assert _extract_url(MOTT_URL) == MOTT_URL
+
+
+def test_extract_url_passthrough_for_relative_url():
+    assert _extract_url("/biz/mott-32-las-vegas-2") == "/biz/mott-32-las-vegas-2"
 
 
 def test_to_row_fields_in_order():
