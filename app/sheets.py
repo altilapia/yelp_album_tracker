@@ -43,9 +43,9 @@ def _to_row(biz: dict) -> list:
 def _write_header(ws: Worksheet) -> None:
     ws.insert_row(COLUMNS, 1)
     ws.format(_HEADER_RANGE, {"textFormat": {"bold": True}})
-    # Unformat row 2 — if an old bold header was shifted down, this clears it
-    _first_data_range = f"A2:{chr(ord('A') + len(COLUMNS) - 1)}2"
-    ws.format(_first_data_range, {"textFormat": {"bold": False}})
+    # Clear bold from all data rows — old headers shifted down may have left residual bold
+    _data_range = f"A2:{chr(ord('A') + len(COLUMNS) - 1)}1000"
+    ws.format(_data_range, {"textFormat": {"bold": False}})
     # Display ratings with one decimal place (e.g. 4.0 not 4)
     _rating_col = chr(ord('A') + COLUMNS.index("rating"))
     ws.format(f"{_rating_col}2:{_rating_col}1000", {"numberFormat": {"type": "NUMBER", "pattern": "0.0"}})
