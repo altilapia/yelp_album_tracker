@@ -46,6 +46,9 @@
       <li><a href="{{ url }}" target="_blank" rel="noopener">{{ url }}</a></li>
       {% endfor %}
     </ul>
+    <form method="post" action="/scrape-all" style="margin-top:1rem;">
+      <button type="submit">Refresh all</button>
+    </form>
     {% else %}
     <p class="empty">No albums tracked yet.</p>
     {% endif %}
