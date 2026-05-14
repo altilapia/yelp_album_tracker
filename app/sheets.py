@@ -98,13 +98,11 @@ def _write_header(ws: Worksheet) -> None:
                 "secondBandColor": _BAND_EVEN,
             },
         }}},
-        # Auto-resize all columns to fit their content
-        {"autoResizeDimensions": {"dimensions": {
-            "sheetId": sid,
-            "dimension": "COLUMNS",
-            "startIndex": 0,
-            "endIndex": len(COLUMNS),
-        }}},
+        # Match the sheet tab color to the header
+        {"updateSheetProperties": {
+            "properties": {"sheetId": sid, "tabColor": _HEADER_BG},
+            "fields": "tabColor",
+        }},
     ]})
 
     ws.set_basic_filter()
@@ -154,6 +152,14 @@ def _upsert(ws: Worksheet, businesses: list[dict]) -> dict:
         ws.batch_update(updates, value_input_option="USER_ENTERED")
     if new_rows:
         ws.append_rows(new_rows, value_input_option="USER_ENTERED")
+
+    # Resize after data is written so columns fit the largest entry, not just the header
+    ws.spreadsheet.batch_update({"requests": [{"autoResizeDimensions": {"dimensions": {
+        "sheetId": ws.id,
+        "dimension": "COLUMNS",
+        "startIndex": 0,
+        "endIndex": len(COLUMNS),
+    }}}]})
 
     return {"new": len(new_rows), "updated": len(updates)}
 
