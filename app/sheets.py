@@ -84,26 +84,31 @@ def _write_header(ws: Worksheet) -> None:
     ws.freeze(rows=1)
 
     sid = ws.id
+    # Tab color is always safe to set
     ws.spreadsheet.batch_update({"requests": [
-        # Alternating row banding starting from row 2
-        {"addBanding": {"bandedRange": {
-            "range": {
-                "sheetId": sid,
-                "startRowIndex": 1,
-                "startColumnIndex": 0,
-                "endColumnIndex": len(COLUMNS),
-            },
-            "rowProperties": {
-                "firstBandColor": _BAND_ODD,
-                "secondBandColor": _BAND_EVEN,
-            },
-        }}},
-        # Match the sheet tab color to the header
         {"updateSheetProperties": {
             "properties": {"sheetId": sid, "tabColor": _HEADER_BG},
             "fields": "tabColor",
         }},
     ]})
+    # Banding fails if already present — skip gracefully
+    try:
+        ws.spreadsheet.batch_update({"requests": [
+            {"addBanding": {"bandedRange": {
+                "range": {
+                    "sheetId": sid,
+                    "startRowIndex": 1,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": len(COLUMNS),
+                },
+                "rowProperties": {
+                    "firstBandColor": _BAND_ODD,
+                    "secondBandColor": _BAND_EVEN,
+                },
+            }}},
+        ]})
+    except gspread.exceptions.APIError:
+        pass
 
     ws.set_basic_filter()
 
