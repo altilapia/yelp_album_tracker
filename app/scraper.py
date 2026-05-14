@@ -17,7 +17,7 @@ def _scroll_until_stable(
     scroll_pause: float = 3.0,
     max_unchanged: int = 5,
 ) -> None:
-    """Scroll down one viewport at a time until collection-item count stops growing."""
+    """Scroll the last loaded item into view until the count stops growing."""
     prev_count = -1
     unchanged = 0
     while unchanged < max_unchanged:
@@ -27,7 +27,10 @@ def _scroll_until_stable(
         else:
             unchanged = 0
             prev_count = count
-        page.evaluate("window.scrollBy(0, window.innerHeight)")
+        if count > 0:
+            page.locator("li.collection-item").nth(count - 1).scroll_into_view_if_needed()
+        else:
+            page.evaluate("window.scrollBy(0, window.innerHeight)")
         time.sleep(scroll_pause)
 
 

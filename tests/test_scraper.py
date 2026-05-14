@@ -13,38 +13,39 @@ def _page(counts):
 # ── _scroll_until_stable logic ────────────────────────────────────────────────
 
 def test_stable_immediately_exits_after_max_unchanged():
-    # count=10 on first call (resets from -1→10), then stable → 4 total scrolls
+    # count=10 on first call (resets from -1→10), then stable → 4 scroll_into_view calls
     page = _page([10, 10, 10, 10])
     _scroll_until_stable(page, scroll_pause=0, max_unchanged=3)
-    assert page.evaluate.call_count == 4
+    assert page.locator.return_value.nth.return_value.scroll_into_view_if_needed.call_count == 4
 
 
 def test_growing_count_resets_unchanged_counter():
-    # 10→20 growth (2 resets), then stable 3 times → 5 total scrolls
+    # 10→20 growth (2 resets), then stable 3 times → 5 scroll_into_view calls
     page = _page([10, 20, 20, 20, 20])
     _scroll_until_stable(page, scroll_pause=0, max_unchanged=3)
-    assert page.evaluate.call_count == 5
+    assert page.locator.return_value.nth.return_value.scroll_into_view_if_needed.call_count == 5
 
 
-def test_scroll_js_expression_is_correct():
-    page = _page([5, 5, 5, 5])
+def test_scroll_into_view_targets_last_item():
+    page = _page([10, 10])
+    _scroll_until_stable(page, scroll_pause=0, max_unchanged=1)
+    page.locator.return_value.nth.assert_called_with(9)
+
+
+def test_empty_page_falls_back_to_scroll_js():
+    # count=0 on every call: falls back to window.scrollBy
+    page = _page([0, 0, 0, 0])
     _scroll_until_stable(page, scroll_pause=0, max_unchanged=3)
+    assert page.evaluate.call_count == 4
     for c in page.evaluate.call_args_list:
         assert "scrollBy" in c[0][0]
         assert "innerHeight" in c[0][0]
 
 
-def test_empty_page_still_scrolls_max_unchanged_plus_one_times():
-    # count=0 on every call: 0≠-1 resets once, then 3 stable
-    page = _page([0, 0, 0, 0])
-    _scroll_until_stable(page, scroll_pause=0, max_unchanged=3)
-    assert page.evaluate.call_count == 4
-
-
 def test_max_unchanged_one_exits_quickly():
     page = _page([10, 10])
     _scroll_until_stable(page, scroll_pause=0, max_unchanged=1)
-    assert page.evaluate.call_count == 2
+    assert page.locator.return_value.nth.return_value.scroll_into_view_if_needed.call_count == 2
 
 
 # ── scrape_album browser setup ────────────────────────────────────────────────
