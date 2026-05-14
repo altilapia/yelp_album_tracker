@@ -36,9 +36,11 @@ def parse_album(html: str) -> list[dict]:
         category = ", ".join(t.get_text(strip=True) for t in category_tags)
 
         neighborhood_tag = item.select_one("span.addr-city")
-        neighborhood: Optional[str] = (
-            neighborhood_tag.get_text(strip=True) if neighborhood_tag else None
-        )
+        neighborhood_text = neighborhood_tag.get_text(strip=True) if neighborhood_tag else ""
+        if ", " in neighborhood_text:
+            city, state = neighborhood_text.rsplit(", ", 1)
+        else:
+            city, state = neighborhood_text or None, None
 
         results.append(
             {
@@ -48,7 +50,8 @@ def parse_album(html: str) -> list[dict]:
                 "rating": rating,
                 "review_count": review_count,
                 "price": price,
-                "neighborhood": neighborhood,
+                "city": city or None,
+                "state": state or None,
             }
         )
 

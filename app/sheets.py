@@ -12,7 +12,8 @@ COLUMNS = [
     "rating",
     "review_count",
     "price",
-    "neighborhood",
+    "city",
+    "state",
 ]
 
 _HEADER_RANGE = f"A1:{chr(ord('A') + len(COLUMNS) - 1)}1"
@@ -34,13 +35,21 @@ def _to_row(biz: dict) -> list:
         _v("rating"),
         _v("review_count"),
         _v("price"),
-        _v("neighborhood"),
+        _v("city"),
+        _v("state"),
     ]
 
 
 def _write_header(ws: Worksheet) -> None:
     ws.insert_row(COLUMNS, 1)
     ws.format(_HEADER_RANGE, {"textFormat": {"bold": True}})
+    # Unformat row 2 — if an old bold header was shifted down, this clears it
+    _first_data_range = f"A2:{chr(ord('A') + len(COLUMNS) - 1)}2"
+    ws.format(_first_data_range, {"textFormat": {"bold": False}})
+    # Display ratings with one decimal place (e.g. 4.0 not 4)
+    _rating_col = chr(ord('A') + COLUMNS.index("rating"))
+    ws.format(f"{_rating_col}2:{_rating_col}1000", {"numberFormat": {"type": "NUMBER", "pattern": "0.0"}})
+    ws.set_basic_filter()
 
 
 def _upsert(ws: Worksheet, businesses: list[dict]) -> dict:

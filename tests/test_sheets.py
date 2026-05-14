@@ -12,7 +12,8 @@ MOTT = {
     "rating": 4.0,
     "review_count": 1575,
     "price": "$$$$",
-    "neighborhood": "Las Vegas, NV",
+    "city": "Las Vegas",
+    "state": "NV",
 }
 
 MANGO = {
@@ -22,7 +23,8 @@ MANGO = {
     "rating": 4.5,
     "review_count": 803,
     "price": None,
-    "neighborhood": "Las Vegas, NV",
+    "city": "Las Vegas",
+    "state": "NV",
 }
 
 
@@ -50,7 +52,8 @@ def test_to_row_fields_in_order():
     assert row[3] == 4.0
     assert row[4] == 1575
     assert row[5] == "$$$$"
-    assert row[6] == "Las Vegas, NV"
+    assert row[6] == "Las Vegas"
+    assert row[7] == "NV"
 
 
 def test_to_row_none_price_becomes_empty_string():
@@ -81,8 +84,20 @@ def test_empty_sheet_writes_header():
 def test_empty_sheet_formats_header_bold():
     ws = _ws([])
     _upsert(ws, [MOTT])
-    ws.format.assert_called_once()
-    assert "bold" in str(ws.format.call_args)
+    calls = [str(c) for c in ws.format.call_args_list]
+    assert any("bold" in c and "True" in c for c in calls)
+
+
+def test_empty_sheet_sets_basic_filter():
+    ws = _ws([])
+    _upsert(ws, [MOTT])
+    ws.set_basic_filter.assert_called_once()
+
+
+def test_inserts_header_sets_basic_filter_when_sheet_has_data_but_no_header():
+    ws = _ws([["Mott 32", MOTT_URL, "Chinese", 4.0, 1575, "$$$$", "Las Vegas", "NV"]])
+    _upsert(ws, [])
+    ws.set_basic_filter.assert_called_once()
 
 
 def test_empty_sheet_all_businesses_are_new():
@@ -97,7 +112,7 @@ def test_empty_sheet_all_businesses_are_new():
 
 def test_inserts_header_when_sheet_has_data_but_no_header():
     # Simulate sheet with 30 rows of raw data and no header
-    raw_rows = [["Mott 32", MOTT_URL, "Chinese", 4.0, 1575, "$$$$", "Las Vegas, NV"]]
+    raw_rows = [["Mott 32", MOTT_URL, "Chinese", 4.0, 1575, "$$$$", "Las Vegas", "NV"]]
     ws = _ws(raw_rows)
     _upsert(ws, [])
     ws.insert_row.assert_called_once_with(COLUMNS, 1)
@@ -107,8 +122,8 @@ def test_header_inserted_before_existing_data_shifts_row_numbers():
     # If there are 2 data rows and we insert a header at row 1,
     # the first data row should now be at row 2 for update targeting.
     raw_rows = [
-        ["Mott 32", MOTT_URL, "Chinese", 4.0, 1575, "$$$$", "Las Vegas, NV"],
-        ["Mango Mango Dessert", MANGO_URL, "Desserts", 4.5, 803, "", "Las Vegas, NV"],
+        ["Mott 32", MOTT_URL, "Chinese", 4.0, 1575, "$$$$", "Las Vegas", "NV"],
+        ["Mango Mango Dessert", MANGO_URL, "Desserts", 4.5, 803, "", "Las Vegas", "NV"],
     ]
     ws = _ws(raw_rows)
     result = _upsert(ws, [MOTT])
@@ -128,7 +143,7 @@ def _existing(*businesses):
             return "" if v is None else v
         rows.append([
             _v("name"), _v("biz_url"), _v("category"),
-            _v("rating"), _v("review_count"), _v("price"), _v("neighborhood"),
+            _v("rating"), _v("review_count"), _v("price"), _v("city"), _v("state"),
         ])
     return rows
 

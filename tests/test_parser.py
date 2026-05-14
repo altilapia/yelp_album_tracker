@@ -17,7 +17,7 @@ def test_total_count(businesses):
 
 
 def test_all_have_required_fields(businesses):
-    required = {"name", "biz_url", "category", "rating", "review_count", "price", "neighborhood"}
+    required = {"name", "biz_url", "category", "rating", "review_count", "price", "city", "state"}
     for biz in businesses:
         assert required == set(biz.keys())
 
@@ -29,7 +29,8 @@ def test_mott_32(businesses):
     assert biz["review_count"] == 1575
     assert biz["price"] == "$$$$"
     assert "Chinese" in biz["category"]
-    assert biz["neighborhood"] == "Las Vegas, NV"
+    assert biz["city"] == "Las Vegas"
+    assert biz["state"] == "NV"
 
 
 def test_mura_japanese_bbq(businesses):
