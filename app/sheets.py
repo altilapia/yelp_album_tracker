@@ -25,13 +25,11 @@ def _to_row(biz: dict) -> list:
 
     url = _v("biz_url")
     name = _v("name")
-    # Escape any double-quotes in the name so the formula stays valid
-    safe_name = name.replace('"', '""')
-    name_link = f'=HYPERLINK("{url}","{safe_name}")' if url else name
+    url_link = f'=HYPERLINK("{url}","{url}")' if url else ""
 
     return [
-        name_link,
-        url,
+        name,
+        url_link,
         _v("category"),
         _v("rating"),
         _v("review_count"),
@@ -52,7 +50,7 @@ def _upsert(ws: Worksheet, businesses: list[dict]) -> dict:
     if not all_values:
         _write_header(ws)
         all_values = [COLUMNS]
-    elif all_values[0][0] != COLUMNS[0]:
+    elif not all_values[0] or all_values[0][0] != COLUMNS[0]:
         # Sheet has data but no header row — insert one now
         _write_header(ws)
         all_values = [COLUMNS] + all_values

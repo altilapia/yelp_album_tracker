@@ -34,14 +34,14 @@ def _ws(rows=None):
 
 # ── _to_row ───────────────────────────────────────────────────────────────────
 
-def test_to_row_name_is_hyperlink_to_biz_url():
+def test_to_row_name_is_plain_text():
     row = _to_row(MOTT)
-    assert row[0] == f'=HYPERLINK("{MOTT_URL}","Mott 32")'
+    assert row[0] == "Mott 32"
 
 
-def test_to_row_biz_url_is_raw_url():
+def test_to_row_biz_url_is_hyperlink():
     row = _to_row(MOTT)
-    assert row[1] == MOTT_URL
+    assert row[1] == f'=HYPERLINK("{MOTT_URL}","{MOTT_URL}")'
 
 
 def test_to_row_fields_in_order():
@@ -58,13 +58,13 @@ def test_to_row_none_price_becomes_empty_string():
     assert row[5] == ""
 
 
-def test_to_row_name_with_quotes_is_escaped():
+def test_to_row_name_with_quotes_stays_as_is():
     biz = {**MOTT, "name": 'Cafe "Joe"'}
     row = _to_row(biz)
-    assert '""Joe""' in row[0]
+    assert row[0] == 'Cafe "Joe"'
 
 
-def test_to_row_empty_url_produces_plain_name():
+def test_to_row_empty_url_produces_empty_biz_url():
     row = _to_row({**MOTT, "biz_url": None})
     assert row[0] == "Mott 32"
     assert row[1] == ""
