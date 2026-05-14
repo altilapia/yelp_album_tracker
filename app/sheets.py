@@ -64,6 +64,8 @@ def _upsert(ws: Worksheet, businesses: list[dict]) -> dict:
     url_to_row: dict[str, int] = {}
     for i, row in enumerate(data_rows, start=2):
         url = row[url_col] if len(row) > url_col else ""
+        if url.startswith("/"):
+            url = "https://www.yelp.com" + url
         if url:
             url_to_row[url] = i
 
