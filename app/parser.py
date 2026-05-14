@@ -43,7 +43,7 @@ def parse_album(html: str) -> list[dict]:
         results.append(
             {
                 "name": name,
-                "biz_url": biz_url,
+                "biz_url": ("https://www.yelp.com" + biz_url) if biz_url.startswith("/") else biz_url,
                 "category": category,
                 "rating": rating,
                 "review_count": review_count,
